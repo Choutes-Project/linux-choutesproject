@@ -1,0 +1,54 @@
+name: Build kernels
+
+on:
+  push:
+    branches: [main]
+    paths: ["builds/**", "fragments/**", "scripts/**", "TKG_COMMIT", "SNAPSHOT", ".github/workflows/build.yml"]
+  workflow_dispatch:
+    inputs:
+      pkgrel:
+        description: "Release number of the packages"
+        default: "1"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        build: [v3, lts-v1]
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    steps:
+      - uses: actions/checkout@v4
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache /usr/local/share/boost
+          sudo docker image prune --all --force >/dev/null
+          df -h /
+      - name: Build ${{ matrix.build }}
+        run: |
+          docker run --rm -v "$PWD:/src" -e PKGREL="${{ inputs.pkgrel || '1' }}" archlinux:base-devel \
+            /src/scripts/ci-inside.sh "${{ matrix.build }}"
+      - name: Checksums
+        run: |
+          cd out/${{ matrix.build }}
+          sudo chown -R "$USER" .
+          sha256sum *.pkg.tar.zst > SHA256SUMS-${{ matrix.build }}
+          cat SHA256SUMS-${{ matrix.build }}
+      - name: Publish the packages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cd out/${{ matrix.build }}
+          tag="build-${{ github.run_number }}"
+          # Both builds publish into the same release; the second one may find it already made.
+          for try in 1 2 3; do
+            gh release view "$tag" >/dev/null 2>&1 && break
+            gh release create "$tag" --title "Kernel build $tag" --prerelease \
+              --notes "Unsigned packages built by GitHub Actions. Choutes Project signs them before they reach the choutes repository; do not install these files by hand." && break
+            sleep 20
+          done
+          gh release upload "$tag" --clobber *.pkg.tar.zst SHA256SUMS-* config-* choutes-*.cfg logs-*.tar.gz

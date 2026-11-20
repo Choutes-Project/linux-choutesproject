@@ -1,0 +1,21 @@
+# Choutes Project config fragment (applied by linux-tkg after its own settings).
+# Full preemption and 1000 Hz, also on the long-term series.
+CONFIG_PREEMPT=y
+# CONFIG_PREEMPT_VOLUNTARY is not set
+# CONFIG_PREEMPT_NONE is not set
+CONFIG_PREEMPT_DYNAMIC=y
+CONFIG_HZ_1000=y
+CONFIG_HZ=1000
+# sched-ext, to change the scheduler at runtime with the scx tools.
+CONFIG_SCHED_CLASS_EXT=y
+CONFIG_BPF_SYSCALL=y
+CONFIG_BPF_JIT=y
+CONFIG_DEBUG_INFO_BTF=y
+# NTsync for Wine and Proton.
+CONFIG_NTSYNC=m
+# Multi-generational LRU, on by default.
+CONFIG_LRU_GEN=y
+CONFIG_LRU_GEN_ENABLED=y
+# BBR available and the default TCP congestion control.
+CONFIG_TCP_CONG_BBR=y
+CONFIG_DEFAULT_BBR=y
