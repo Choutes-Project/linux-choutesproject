@@ -29,7 +29,9 @@ want "CONFIG_TCP_CONG_BBR=y"
 want "CONFIG_DEFAULT_TCP_CONG=\"bbr\""
 grep -q "^CONFIG_SCHED_BORE=y\|^CONFIG_SCHED_ALT=y\|^CONFIG_SCHED_PDS=y\|^CONFIG_SCHED_BMQ=y" "$cfg" \
   && { echo "FAIL  another scheduler than EEVDF"; fail=1; } || echo "ok    EEVDF (no other scheduler)"
-grep -q '^CONFIG_NR_CPUS=320$' "$cfg" && echo "ok    CONFIG_NR_CPUS=320" || { echo "FAIL  CONFIG_NR_CPUS is not 320"; fail=1; }
+# NR_CPUS: the default of the kernel configuration, never the cores of the build machine (at least 64).
+ncpus="$(sed -n 's/^CONFIG_NR_CPUS=//p' "$cfg")"
+[ -n "$ncpus" ] && [ "$ncpus" -ge 64 ] && echo "ok    CONFIG_NR_CPUS=$ncpus" || { echo "FAIL  CONFIG_NR_CPUS is ${ncpus:-missing}"; fail=1; }
 grep -q '^CONFIG_CMDLINE=""$\|^# CONFIG_CMDLINE_BOOL is not set' "$cfg" && echo "ok    no built-in command line" \
   || { echo "FAIL  a built-in kernel command line"; fail=1; }
 

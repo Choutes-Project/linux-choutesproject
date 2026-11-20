@@ -17,7 +17,7 @@ Every setting is in [`builds/`](builds) and [`fragments/`](fragments); nothing e
 
 - **Scheduler:** EEVDF, the scheduler of the Linux kernel itself.
 - **Timer and preemption:** 1000 Hz and full preemption.
-- **Compiler:** Clang with ThinLTO and `-O3`, for a fixed processor level. A build never targets the processor of the machine that builds it (no `native`).
+- **Compiler:** Clang with ThinLTO; `-O3` for `linux-choutesproject`, `-O2` for the long-term series (Clang `-O3` breaks the link of 6.18), for a fixed processor level. A build never targets the processor of the machine that builds it (no `native`).
 - **Gaming:** NTsync (module `ntsync`) and Fsync for Wine and Proton.
 - **Scheduling and memory:** sched-ext, to change the scheduler at runtime with the scx tools; multi-generational LRU.
 - **Network:** BBR as the default TCP congestion control. This is BBR as it is in the Linux kernel, not BBRv3.
@@ -26,7 +26,7 @@ Every setting is in [`builds/`](builds) and [`fragments/`](fragments); nothing e
 Settings are left as the kernel has them where a change would only suit one machine:
 - the default CPU frequency governor (schedutil);
 - no built-in kernel command line;
-- `NR_CPUS` 320;
+- `NR_CPUS` as the kernel configuration has it;
 - tracing and NUMA stay on.
 
 ## Build
